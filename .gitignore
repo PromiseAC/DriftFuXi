@@ -1,0 +1,23 @@
+# Dependencies and local environments
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Datasets and caches
+data/
+tmp/
+*.pt
+*.pth
+
+# Training outputs
+exps/
+ckpts/
+logs/
+runs/
+wandb/
+
+# Local OS and editor state
+.DS_Store
+.idea/
+.vscode/
