@@ -21,3 +21,7 @@ wandb/
 .DS_Store
 .idea/
 .vscode/
+
+# Host-specific Stage 1 inventory (keep public repo free of local paths/package lists)
+/artifacts/stage1/environment.json
+/artifacts/stage1/pip_freeze.txt
