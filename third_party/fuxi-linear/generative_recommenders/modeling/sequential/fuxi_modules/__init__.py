@@ -32,6 +32,15 @@ from .attn import (
     LinearTemporalChannel,
 )
     
+def rms_norm_compat(x: torch.Tensor, normalized_shape, eps: float) -> torch.Tensor:
+    """RMSNorm formula for the upstream-pinned torch 2.2.2, which lacks F.rms_norm."""
+    if hasattr(F, "rms_norm"):
+        return F.rms_norm(x, normalized_shape=normalized_shape, eps=eps)
+    dims = tuple(range(-len(normalized_shape), 0))
+    xf = x.float()
+    return (xf * torch.rsqrt(xf.square().mean(dim=dims, keepdim=True) + eps)).to(x.dtype)
+
+
 # FFNs    
     
 class MultistageFeedforwardNeuralNetwork(torch.nn.Module) :
@@ -70,7 +79,7 @@ class MultistageFeedforwardNeuralNetwork(torch.nn.Module) :
             ) + X0
         )
         if not self.is_single_stage :
-            normed_X = F.rms_norm(X, normalized_shape=[self.input_size], eps=self.eps)
+            normed_X = rms_norm_compat(X, normalized_shape=[self.input_size], eps=self.eps)
             normed_X = F.dropout(
                 normed_X,
                 p = self.dropout_ratio,

@@ -34,9 +34,6 @@ from generative_recommenders.modeling.sequential.output_postprocessors import (
     OutputPostprocessorModule,
 )
 from generative_recommenders.modeling.sequential.sasrec import SASRec
-from generative_recommenders.modeling.sequential.mamba4rec import Mamba4Rec
-from generative_recommenders.modeling.sequential.tim4rec import TiM4Rec
-from generative_recommenders.modeling.sequential.ttt4rec import TTT4Rec
 
 from generative_recommenders.modeling.similarity_module import (
     GeneralizedInteractionModule,
@@ -94,6 +91,8 @@ def mamba4rec_encoder(
     dropout_rate: float,
     use_time_interval_embedding: bool = False,
 ) -> GeneralizedInteractionModule:
+    from generative_recommenders.modeling.sequential.mamba4rec import Mamba4Rec
+
     return Mamba4Rec(
         embedding_module=embedding_module,
         max_sequence_len=max_sequence_length,
@@ -134,6 +133,8 @@ def ttt4rec_encoder(
     pre_conv=False,
     share_qk=False,
 ) -> GeneralizedInteractionModule:
+    from generative_recommenders.modeling.sequential.ttt4rec import TTT4Rec
+
     return TTT4Rec(
         embedding_module=embedding_module,
         max_sequence_len=max_sequence_length,
@@ -228,6 +229,8 @@ def tim4rec_encoder(
     is_kai_ming_init: bool = False,
     verbose: bool = False,
 ) :
+    from generative_recommenders.modeling.sequential.tim4rec import TiM4Rec
+
     return TiM4Rec(
         embedding_module=embedding_module,
         embedding_dim=embedding_module.item_embedding_dim,

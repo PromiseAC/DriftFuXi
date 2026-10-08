@@ -17,6 +17,7 @@
 
 # pyre-unsafe
 
+import json
 import logging
 import os
 import random
@@ -129,10 +130,14 @@ def train_fn(
     np.random.seed(random_seed)
     torch.manual_seed(random_seed)
     torch.cuda.manual_seed(random_seed)
+    torch.cuda.manual_seed_all(random_seed)
     logging.info(f"cuda.matmul.allow_tf32: {enable_tf32}")
     logging.info(f"cudnn.allow_tf32: {enable_tf32}")
     logging.info(f"Training model on rank {rank}.")
     setup(rank, world_size, master_port)
+    stage2_run_dir = os.environ.get("DRIFTFUXI_RUN_DIR")
+    if rank == 0 and stage2_run_dir:
+        os.makedirs(stage2_run_dir, exist_ok=True)
 
     dataset = get_reco_dataset(
         dataset_name=dataset_name,
@@ -306,8 +311,13 @@ def train_fn(
         if eval_data_sampler is not None:
             eval_data_sampler.set_epoch(epoch)
         model.train()
+        train_examples = 0
+        eval_examples = 0
+        torch.cuda.synchronize(rank)
+        train_wall_start = time.perf_counter()
         train_elapse -= time.time()
         for row in iter(train_data_loader):
+            train_examples += len(row["user_id"])
             seq_features, target_ids, target_ratings = movielens_seq_features_from_row(
                 row,
                 device=device,
@@ -427,6 +437,8 @@ def train_fn(
 
             batch_id += 1
         train_elapse += time.time()
+        torch.cuda.synchronize(rank)
+        train_wall_seconds = time.perf_counter() - train_wall_start
 
         def is_full_eval(epoch: int) -> bool:
             return (epoch % full_eval_every_n) == 0
@@ -434,6 +446,8 @@ def train_fn(
         # eval per epoch
         eval_dict_all = None
         eval_start_time = time.time()
+        torch.cuda.synchronize(rank)
+        eval_wall_start = time.perf_counter()
         model.eval()
         eval_state = get_eval_state(
             model=model.module,
@@ -450,6 +464,7 @@ def train_fn(
         )
         eval_elapse -= time.time()
         for eval_iter, row in enumerate(iter(eval_data_loader)):
+            eval_examples += len(row["user_id"])
             seq_features, target_ids, target_ratings = movielens_seq_features_from_row(
                 row, device=device, max_output_length=gr_output_length + 1
             )
@@ -478,6 +493,8 @@ def train_fn(
                 )
                 break
         eval_elapse += time.time()
+        torch.cuda.synchronize(rank)
+        eval_wall_seconds = time.perf_counter() - eval_wall_start
 
         assert eval_dict_all is not None
         for k, v in eval_dict_all.items():
@@ -513,6 +530,27 @@ def train_fn(
                 },
                 f"./ckpts/{model_desc}_ep{epoch}",
             )
+
+        if rank == 0 and stage2_run_dir:
+            # Observability only: the official split, loss, sampler and evaluator are unchanged.
+            record = {
+                "epoch": epoch,
+                "full_eval": is_full_eval(epoch),
+                "ndcg@10": float(ndcg_10.item()),
+                "ndcg@50": float(ndcg_50.item()),
+                "hr@10": float(hr_10.item()),
+                "hr@50": float(hr_50.item()),
+                "mrr": float(mrr.item()),
+                "train_wall_seconds": train_wall_seconds,
+                "eval_wall_seconds": eval_wall_seconds,
+                "train_sequences": train_examples * world_size,
+                "eval_sequences": eval_examples * world_size,
+                "training_throughput_sequences_per_second": train_examples * world_size / train_wall_seconds,
+                "eval_throughput_sequences_per_second": eval_examples * world_size / eval_wall_seconds,
+                "peak_gpu_memory_allocated_bytes_rank0": torch.cuda.max_memory_allocated(rank),
+            }
+            with open(os.path.join(stage2_run_dir, "epoch_metrics.jsonl"), "a") as f:
+                f.write(json.dumps(record) + "\n")
 
         logging.info(
             f"rank {rank}: eval @ epoch {epoch} in {time.time() - eval_start_time:.2f}s: "

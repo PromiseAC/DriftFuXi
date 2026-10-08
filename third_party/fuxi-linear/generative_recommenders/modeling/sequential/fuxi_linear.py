@@ -44,6 +44,7 @@ from generative_recommenders.modeling.sequential.hstu import RelativeBucketedTim
 from generative_recommenders.modeling.sequential.fuxi_modules import (
     Retention,
     MultistageFeedforwardNeuralNetwork,
+    rms_norm_compat,
 )
 from generative_recommenders.modeling.sequential.fuxi_modules.attn import (
     LinearPositionalChannel,
@@ -150,7 +151,7 @@ class FuXiLinearBlockJagged(torch.nn.Module):
         return F.layer_norm(x, normalized_shape=[self._embedding_dim], eps=self._eps)
 
     def _norm_attn_output(self, x: torch.Tensor) -> torch.Tensor:
-        return F.rms_norm(
+        return rms_norm_compat(
             x, normalized_shape=[self._attn_dim], eps=self._eps
         )
 

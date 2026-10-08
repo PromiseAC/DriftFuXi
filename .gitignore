@@ -25,3 +25,6 @@ wandb/
 # Host-specific Stage 1 inventory (keep public repo free of local paths/package lists)
 /artifacts/stage1/environment.json
 /artifacts/stage1/pip_freeze.txt
+
+# Full baseline runs and licensed datasets
+/outputs/

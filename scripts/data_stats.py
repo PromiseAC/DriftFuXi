@@ -11,6 +11,8 @@ def sequence(cell):
     return list(value) if isinstance(value,(list,tuple)) else [value]
 
 def summarize(path):
+    # KuaiRec long-history CSV cells exceed Python CSV's 128 KiB default.
+    csv.field_size_limit(1 << 30)
     lengths, items, users = [],set(),set()
     unique_pairs = 0
     with path.open() as f:
