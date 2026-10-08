@@ -1,0 +1,9 @@
+# Stage 1 CPU smoke-only additions; install PyTorch separately for the target host.
+gin-config==0.5.0
+iopath==0.1.10
+numpy==2.2.6
+pandas==2.2.3
+scipy==1.13.1
+einops==0.8.1
+tqdm==4.67.1
+tensorboard==2.20.0

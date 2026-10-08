@@ -1,0 +1,79 @@
+
+  0%|          | 0/6 [00:00<?, ?it/s]
+100%|██████████| 6/6 [00:00<00:00, 4746.48it/s]
+
+  0%|          | 0/6 [00:00<?, ?it/s]
+100%|██████████| 6/6 [00:00<00:00, 20460.02it/s]
+Initialize _item_emb.weight as truncated normal: torch.Size([65, 16]) params
+INFO:root:chunk_size = None
+INFO:root:<class 'generative_recommenders.modeling.sequential.input_features_preprocessors.LearnablePositionalEmbeddingInputFeaturesPreprocessor'>
+INFO:root:Retention: num heads = 2, chunk_size = None
+INFO:root:multi-head krab, chunk_size=None
+INFO:root:channel_t tensor([1024, 8192])
+INFO:root:channel_t: learnable gamma!
+INFO:root:channel t: use aug conn.
+INFO:root:Temporal channel config: {'num_heads': 2, 'base': 2, 'base_stride': 3, 'start_index': 10, 'aug_current': True, 'learnable_gamma': True, 'chunk_size': None}
+INFO:root:Positional channel config: {'dim': 4, 'aug_current': True, 'max_sequence_length': 12}
+INFO:root:Retention: num heads = 2, chunk_size = None
+INFO:root:multi-head krab, chunk_size=None
+INFO:root:channel_t tensor([1024, 8192])
+INFO:root:channel t: use aug conn.
+INFO:root:Temporal channel config: {'num_heads': 2, 'base': 2, 'base_stride': 3, 'start_index': 10, 'aug_current': True, 'learnable_gamma': True, 'chunk_size': None}
+INFO:root:Positional channel config: {'dim': 4, 'aug_current': True, 'max_sequence_length': 12}
+Traceback (most recent call last):
+  File "[PROJECT_ROOT]/scripts/smoke_test.py", line 168, in <module>
+    main()
+  File "[PROJECT_ROOT]/scripts/smoke_test.py", line 104, in main
+    hidden = model(features.past_lengths,features.past_ids,emb,features.past_payloads)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "[EXISTING_TORCH_ENV]/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1783, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "[EXISTING_TORCH_ENV]/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1794, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "[PROJECT_ROOT]/third_party/fuxi-linear/generative_recommenders/modeling/sequential/fuxi_linear.py", line 601, in forward
+    encoded_embeddings, _ = self.generate_user_embeddings(
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "[PROJECT_ROOT]/third_party/fuxi-linear/generative_recommenders/modeling/sequential/fuxi_linear.py", line 561, in generate_user_embeddings
+    user_embeddings, cached_states = self._fuxi(
+                                     ^^^^^^^^^^^
+  File "[EXISTING_TORCH_ENV]/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1783, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "[EXISTING_TORCH_ENV]/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1794, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "[PROJECT_ROOT]/third_party/fuxi-linear/generative_recommenders/modeling/sequential/fuxi_linear.py", line 356, in forward
+    jagged_x, cache_states = self.jagged_forward(
+                             ^^^^^^^^^^^^^^^^^^^^
+  File "[PROJECT_ROOT]/third_party/fuxi-linear/generative_recommenders/modeling/sequential/fuxi_linear.py", line 311, in jagged_forward
+    x, cache_states_i, buffer_states = layer(
+                                       ^^^^^^
+  File "[EXISTING_TORCH_ENV]/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1783, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "[EXISTING_TORCH_ENV]/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1889, in _call_impl
+    return inner()
+           ^^^^^^^
+  File "[EXISTING_TORCH_ENV]/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1837, in inner
+    result = forward_call(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "[PROJECT_ROOT]/third_party/fuxi-linear/generative_recommenders/modeling/sequential/fuxi_linear.py", line 223, in forward
+    output_latent_t, channel_t_buffer, cache_t = self._channel_t(
+                                                 ^^^^^^^^^^^^^^^^
+  File "[EXISTING_TORCH_ENV]/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1783, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "[EXISTING_TORCH_ENV]/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1889, in _call_impl
+    return inner()
+           ^^^^^^^
+  File "[EXISTING_TORCH_ENV]/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1837, in inner
+    result = forward_call(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "[PROJECT_ROOT]/third_party/fuxi-linear/generative_recommenders/modeling/sequential/fuxi_modules/attn.py", line 496, in forward
+    if self._no_multihead :
+       ^^^^^^^^^^^^^^^^^^
+  File "[EXISTING_TORCH_ENV]/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1972, in __getattr__
+    raise AttributeError(
+AttributeError: 'LinearTemporalChannel' object has no attribute '_no_multihead'

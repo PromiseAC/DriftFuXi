@@ -1,0 +1,16 @@
+{
+  "file": "artifacts/stage1/synthetic_sequences.csv",
+  "users": 6,
+  "items_observed": 46,
+  "interactions": 51,
+  "unique_user_item_pairs": 51,
+  "sequence_length": {
+    "avg": 8.5,
+    "median": 8.5,
+    "p90": 10.5,
+    "p95": 10.75,
+    "max": 11
+  },
+  "sparsity_unique_pairs": 0.8152173913043479,
+  "definition": "Before truncation/splitting; sparsity = 1 - unique(user,item)/(users*observed_items)"
+}

@@ -5,8 +5,8 @@ __pycache__/
 *.py[cod]
 
 # Datasets and caches
-data/
-tmp/
+/data/
+/tmp/
 *.pt
 *.pth
 

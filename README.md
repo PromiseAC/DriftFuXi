@@ -7,24 +7,30 @@
 
 ## 当前状态
 
-**Stage 0 已完成：论文与官方源码分析。** 当前项目只有分析与项目约束，没有模型源码、依赖环境、数据、训练结果或创新模块。完整 Code Map 见 [docs/codebase_analysis.md](docs/codebase_analysis.md)。
+Stage 0 的论文与源码分析已完成，见 [Code Map](docs/codebase_analysis.md)。Stage 1 的 **CPU 合成数据最小 Smoke Test 已通过**，见 [环境报告](docs/environment_report.md)与[数据流程](docs/data_pipeline.md)。机器无 CUDA、真实三数据集未就绪，所以没有论文复现、真实推荐指标或效率结论。下一阶段尚未开始。
 
 ## 项目结构
 
 ```text
 DriftFuXi/
-├── README.md                    # 项目定位与当前状态
-├── AGENTS.md                    # 分阶段执行边界
-├── .gitignore                   # 本地数据、环境与实验产物忽略规则
-└── docs/
-    ├── codebase_analysis.md    # Stage 0 交付：论文与官方源码 Code Map
-    └── upstream.md             # 官方论文、源码与分析基准版本
+├── docs/                       # Stage 0 Code Map、Stage 1 环境与数据流程
+├── third_party/fuxi-linear/   # 官方固定 commit 源码快照，仅一处已记录的运行修复
+├── scripts/                    # Stage 1 环境、统计、CPU Smoke 工具
+├── artifacts/stage1/           # 合成 fixture、真实执行日志和检查 JSON
+├── requirements-stage1.txt     # 已有 PyTorch 环境之上的最小增量依赖
+└── AGENTS.md                   # 分阶段执行边界
 ```
 
-## 阶段边界
+## Stage 1 本机复查
 
-每次只执行用户明确指定的当前 Stage；完成后汇报修改/分析内容、核心文件、运行命令、验证结果、存在问题，并停止。后续阶段的实现与实验只有在用户发出下一阶段任务后才开始。指标和性能数据必须来自实际运行，不使用论文报告值冒充本地复现值。
+运行环境在 `.venv`，复用本机 现有环境 的 PyTorch。可在项目根目录运行：
 
-## 查看 Stage 0
+```bash
+.venv/bin/python -m pip check
+.venv/bin/python scripts/smoke_test.py --cpu-reference --debug-shapes
+.venv/bin/python scripts/smoke_test.py --cpu-reference --chunk-size 0 --output artifacts/stage1/smoke_nonchunked.json
+```
 
-无需安装依赖。直接阅读 [Code Map](docs/codebase_analysis.md) 和 [上游版本说明](docs/upstream.md)。如需对照源码，可按 `docs/upstream.md` 的只读命令检出对应官方 commit。
+其它机器需先建立隔离 Python 3.12 + PyTorch 环境，再安装 `requirements-stage1.txt`；`--cpu-reference` 仅测试 CPU 计算链。源码来源及唯一上游修复见 [upstream.md](docs/upstream.md)。
+
+每次只执行用户明确指定的当前 Stage；完成后汇报核心文件、命令、验证结果与现存问题，并停止。指标和性能数据只来自实际运行。

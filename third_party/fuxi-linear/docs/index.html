@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FuXi-Linear: Unleashing the Power of Linear Attention in Long-term Time-aware Sequential Recommendation</title>
+  <style>
+    :root {
+      --ink: #172033;
+      --muted: #53657a;
+      --line: #d8e0ea;
+      --paper: #ffffff;
+      --soft: #f3f6fa;
+      --blue: #2454d6;
+      --green: #087443;
+      --gold: #9f6700;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; overflow-x: hidden; }
+    body {
+      color: var(--ink);
+      background: linear-gradient(180deg, #ffffff 0, #f6f8fb 360px, #eef2f7 100%);
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+      line-height: 1.62;
+    }
+    a { color: var(--blue); font-weight: 700; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .wrap { width: 100%; max-width: 1120px; margin: 0 auto; padding: 0 18px; }
+    .site-header { background: #fff; border-bottom: 1px solid var(--line); }
+    .hero { padding: 48px 0 34px; }
+    .eyebrow { margin: 0 0 10px; color: var(--green); font-size: 13px; font-weight: 900; text-transform: uppercase; letter-spacing: .06em; }
+    h1 { margin: 0; max-width: 980px; font-size: clamp(32px, 5vw, 56px); line-height: 1.06; letter-spacing: 0; overflow-wrap: anywhere; word-break: break-word; }
+    .subtitle { max-width: 860px; margin: 18px 0 0; color: var(--muted); font-size: 18px; }
+    .quick-links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+    .button {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-height: 38px; border: 1px solid #b9c5d8; border-radius: 6px;
+      padding: 0 13px; background: var(--paper); color: #263650; font-size: 14px;
+    }
+    main.wrap { padding: 34px 18px 64px; }
+    .toc {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      padding: 14px; margin: 0 0 26px; border: 1px solid var(--line); border-radius: 8px; background: rgba(255,255,255,.78);
+    }
+    .toc a { font-size: 13px; padding: 6px 8px; border-radius: 6px; background: #eef3fb; color: #26405f; }
+    .content {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 32px;
+      box-shadow: 0 18px 44px rgba(15, 23, 42, .06);
+    }
+    h2 { margin: 42px 0 14px; padding-top: 4px; border-top: 1px solid var(--line); font-size: 30px; line-height: 1.22; letter-spacing: 0; }
+    h2:first-child { margin-top: 0; border-top: 0; }
+    h3 { margin: 28px 0 10px; font-size: 22px; line-height: 1.25; letter-spacing: 0; }
+    p, li, td, th, .toc a, .button { overflow-wrap: anywhere; word-break: break-word; }
+    p { margin: 0 0 16px; }
+    ul, ol { padding-left: 24px; }
+    li { margin: 6px 0; }
+    img { max-width: 100%; height: auto; border-radius: 6px; }
+    p > img:only-child { display: block; margin: 18px auto; border: 1px solid var(--line); box-shadow: 0 12px 30px rgba(15, 23, 42, .08); }
+    pre { max-width: 100%; overflow-x: auto; white-space: pre; margin: 16px 0; padding: 16px; border-radius: 8px; background: #111827; color: #e5e7eb; line-height: 1.5; }
+    code { font-family: "Cascadia Mono", Consolas, monospace; font-size: .92em; }
+    :not(pre) > code { padding: .12em .35em; border-radius: 4px; background: #eef2f7; color: #17304f; }
+    table { display: block; width: 100%; max-width: 100%; overflow-x: auto; border-collapse: collapse; margin: 16px 0; }
+    th, td { padding: 9px 10px; border: 1px solid var(--line); vertical-align: top; }
+    th { background: #f4f7fb; text-align: left; }
+    blockquote { margin: 18px 0; padding: 10px 16px; border-left: 4px solid var(--blue); background: #f4f7fb; color: #334155; }
+    footer { padding: 28px 0 44px; color: var(--muted); font-size: 14px; }
+    @media (max-width: 760px) {
+      .wrap { padding: 0 12px; }
+      .hero { padding: 34px 0 26px; }
+      h1 { max-width: 100%; font-size: 30px; }
+      .subtitle { font-size: 16px; }
+      .quick-links { display: grid; grid-template-columns: minmax(0, 1fr); }
+      .button { min-width: 0; width: 100%; padding: 7px 8px; }
+      .content { padding: 22px 16px; }
+      main.wrap { padding: 28px 12px 56px; }
+      h2 { font-size: 25px; }
+      h3 { font-size: 20px; }
+      pre { white-space: pre-wrap; word-break: break-word; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <section class="hero">
+      <div class="wrap">
+        <p class="eyebrow">Academic Project Page</p>
+        <h1>FuXi-Linear: Unleashing the Power of Linear Attention in Long-term Time-aware Sequential Recommendation</h1>
+        <p class="subtitle">The paper argues that conventional attention-based recommenders struggle with thousand-length user sequences because of quadratic cost and coupled temporal/semantic signals. FuXi-Linear introduces temporal retention and linear positional modeling to retain recommendation quality while improving long-sequence efficiency.</p>
+        <div class="quick-links"><a class="button" href="https://arxiv.org/abs/2602.23671">Paper</a><a class="button" href="https://arxiv.org/pdf/2602.23671">PDF</a><a class="button" href="https://ustc-starteam.github.io/fuxi-linear/">Project Page</a><a class="button" href="https://github.com/USTC-StarTeam/fuxi-linear">Code</a><a class="button" href="#citation">Citation</a><a class="button" href="https://github.com/USTC-StarTeam/fuxi-linear">GitHub Repo</a></div>
+      </div>
+    </section>
+  </header>
+  <main class="wrap">
+    <div class="toc"><a href="#1-paper">1. Paper</a><a href="#2-highlights">2. Highlights</a><a href="#3-method-at-a-glance">3. Method At A Glance</a><a href="#4-repository-structure">4. Repository Structure</a><a href="#5-installation">5. Installation</a><a href="#6-data-models">6. Data / Models</a><a href="#7-quick-start">7. Quick Start</a><a href="#8-reproducing-results-evaluation">8. Reproducing Results / Evaluation</a><a href="#9-configuration-notes">9. Configuration Notes</a><a href="#10-experimental-highlights">10. Experimental Highlights</a><a href="#11-notes-for-maintainers">11. Notes For Maintainers</a><a href="#12-citation">12. Citation</a><a href="#13-contact">13. Contact</a></div>
+    <article class="content">
+<p><a href="https://ustc-starteam.github.io/fuxi-linear/"><img src="https://img.shields.io/badge/Project-Page-2454d6.svg" alt="Project Page"></a>
+<a href="https://arxiv.org/abs/2602.23671"><img src="https://img.shields.io/badge/arXiv-2602.23671-b31b1b.svg" alt="arXiv"></a>
+<a href="https://doi.org/10.5281/zenodo.20425007"><img src="https://zenodo.org/badge/1107431605.svg" alt="DOI"></a>
+<a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.8%2B-3776ab.svg" alt="Python"></a></p>
+<p>Official PyTorch implementation for <strong>"FuXi-Linear: Unleashing the Power of Linear Attention in Long-term Time-aware Sequential Recommendation"</strong>.</p>
+<p>FuXi-Linear brings linear-complexity modeling to long-term time-aware sequential recommendation. It separates semantic, temporal, and positional signals through a FuXi-Linear block with a Temporal Retention Channel and a Linear Positional Channel, enabling long-sequence experiments on KuaiRand-27K, KuaiRec, and MovieLens-20M.</p>
+<h2 id="1-paper">1. Paper</h2>
+<p>Yufei Ye, Wei Guo, Hao Wang, Luankang Zhang, Heng Chang, Hong Zhu, Yuyang Ye, Yong Liu, Defu Lian, and Enhong Chen. <strong>FuXi-Linear: Unleashing the Power of Linear Attention in Long-term Time-aware Sequential Recommendation.</strong> arXiv:2602.23671, 2026.</p>
+<p><a href="https://arxiv.org/abs/2602.23671">Paper</a> / <a href="https://arxiv.org/pdf/2602.23671">PDF</a> / <a href="https://ustc-starteam.github.io/fuxi-linear/">Project Page</a> / <a href="https://github.com/USTC-StarTeam/fuxi-linear">Code</a> / <a href="#citation">Citation</a></p>
+<p>The paper argues that conventional attention-based recommenders struggle with thousand-length user sequences because of quadratic cost and coupled temporal/semantic signals. FuXi-Linear introduces temporal retention and linear positional modeling to retain recommendation quality while improving long-sequence efficiency.</p>
+<h2 id="2-highlights">2. Highlights</h2>
+<ul>
+<li>Uses a <strong>Temporal Retention Channel</strong> to capture period-aware temporal information without mixing it directly with semantic attention.</li>
+<li>Adds a <strong>Linear Positional Channel</strong> to restore positional signals under linear attention.</li>
+<li>Supports long time-aware sequential recommendation experiments with public preprocessing scripts.</li>
+<li>Reports efficient long-sequence inference with competitive recommendation quality.</li>
+</ul>
+<h2 id="3-method-at-a-glance">3. Method At A Glance</h2>
+<p><img src="assets/method-overview.png" alt="FuXi-Linear architecture"></p>
+<p>The FuXi-Linear block combines retention, linear positional, and temporal retention channels before the multi-stage feed-forward network. This design keeps linear complexity while making timestamp and position information explicit.</p>
+<h2 id="4-repository-structure">4. Repository Structure</h2>
+<pre><code class="language-text">.
+|-- configs/                         # Gin configs for KuaiRand-27K, KuaiRec, and MovieLens-20M
+|-- generative_recommenders/         # Sequential recommendation model components
+|-- preprocess_*.py                  # Dataset preprocessing scripts
+|-- main.py                          # Main training entry point
+|-- requirements.txt                 # Runtime dependencies
+`-- docs/                            # Project page and README assets</code></pre>
+<h2 id="5-installation">5. Installation</h2>
+<p>Install PyTorch for your CUDA environment first, then install the remaining dependencies:</p>
+<pre><code class="language-bash">pip3 install gin-config absl-py scikit-learn scipy matplotlib numpy apex hypothesis pandas fbgemm_gpu iopath</code></pre>
+<h2 id="6-data-models">6. Data / Models</h2>
+<p>Create a local <code>tmp/</code> directory and download the public datasets:</p>
+<ul>
+<li><a href="https://kuairand.com/">KuaiRand</a></li>
+<li><a href="https://kuairec.com/">KuaiRec</a></li>
+<li>MovieLens-20M, downloaded by the preprocessing script</li>
+</ul>
+<p>Expected local layout:</p>
+<pre><code class="language-text">tmp/
+|-- kuairand-27k/
+`-- kuairec/</code></pre>
+<h2 id="7-quick-start">7. Quick Start</h2>
+<p>Preprocess public datasets:</p>
+<pre><code class="language-bash">python3 preprocess_public_data.py
+python3 preprocess_kuairand27k_data.py
+python3 preprocess_kuairec_data.py</code></pre>
+<p>Run a KuaiRand-27K experiment:</p>
+<pre><code class="language-bash">CUDA_VISIBLE_DEVICES=0,1 python3 main.py \
+  --gin_config_file=configs/kuairand-27k/linear-4b-l1024-b64x2.gin \
+  --master_port=12345</code></pre>
+<h2 id="8-reproducing-results-evaluation">8. Reproducing Results / Evaluation</h2>
+<p>Experiment configurations are organized under:</p>
+<ul>
+<li><code>configs/kuairand-27k/</code></li>
+<li><code>configs/kuairec/</code></li>
+<li><code>configs/ml-20m/</code></li>
+</ul>
+<p>Training logs are written to <code>exps/</code> by default. You can inspect them with TensorBoard:</p>
+<pre><code class="language-bash">tensorboard --logdir ./exps/kuairand-27k-l1024/ --port 24001 --bind_all</code></pre>
+<h2 id="9-configuration-notes">9. Configuration Notes</h2>
+<p>The included Gin files cover several model families and sequence-length settings. Start from the dataset-specific <code>linear-*.gin</code> files when reproducing FuXi-Linear, then compare against the HSTU, Mamba, SASRec, TiM4Rec, and TTT configurations included in the same folders.</p>
+<h2 id="10-experimental-highlights">10. Experimental Highlights</h2>
+<p><img src="assets/fuxi-linear-public-results.png" alt="FuXi-Linear public benchmark and efficiency results"></p>
+<p>The crop above combines the paper's public-dataset comparison and sequence-length efficiency curves, showing both the accuracy gains and the prefill/decode speed advantage that motivate the concise summary below.</p>
+<p>The reported experiments focus on long user histories where efficient attention matters most. FuXi-Linear is designed to preserve the expressive benefits of sequence modeling while reducing prefill and decoding costs in thousand-length recommendation settings.</p>
+<table>
+<thead><tr>
+<th>Finding</th>
+<th>Paper evidence</th>
+<th>Takeaway</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Overall accuracy</td>
+<td>On Kuairand-27K and KuaiRec, FuXi-Linear reports average relative gains of <strong>+9.26% NDCG@10</strong>, <strong>+7.24% NDCG@50</strong>, <strong>+9.01% HR@10</strong>, <strong>+5.11% HR@50</strong>, and <strong>+8.33% MRR</strong>.</td>
+<td>The linear design keeps accuracy competitive in long-sequence settings.</td>
+</tr>
+<tr>
+<td>Temporal channel</td>
+<td>On Kuairand-27K, the temporal method reports <strong>NDCG@10 0.0609</strong>, <strong>HR@10 0.1124</strong>, and <strong>MRR 0.0540</strong> with linear complexity.</td>
+<td>Explicit temporal modeling is a main source of the gain.</td>
+</tr>
+<tr>
+<td>Efficiency</td>
+<td>The paper reports up to <strong>10x prefill</strong> and <strong>21x decoding</strong> speedups; at sequence length 8k, prefill is faster than FuXi-alpha, FuXi-beta, and HSTU.</td>
+<td>The method targets deployment cost, not only offline accuracy.</td>
+</tr>
+<tr>
+<td>Scaling</td>
+<td>On Kuairand-27K, <strong>NDCG@10 / HR@10</strong> scale from <strong>0.0472 / 0.0881</strong> at 188K parameters to <strong>0.0710 / 0.1288</strong> at 20M parameters.</td>
+<td>The architecture preserves useful scaling behavior over larger models.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="11-notes-for-maintainers">11. Notes For Maintainers</h2>
+<ul>
+<li>Keep dataset files and training artifacts out of Git history.</li>
+<li>Store future README/project-page figures under <code>docs/assets/</code>.</li>
+<li>When proceedings or presentation links become public, add them to the Paper section and project page.</li>
+</ul>
+<p><a id="citation"></a></p>
+<h2 id="12-citation">12. Citation</h2>
+<pre><code class="language-bibtex">@misc{ye2026fuxilinear,
+  title = {FuXi-Linear: Unleashing the Power of Linear Attention in Long-term Time-aware Sequential Recommendation},
+  author = {Ye, Yufei and Guo, Wei and Wang, Hao and Zhang, Luankang and Chang, Heng and Zhu, Hong and Ye, Yuyang and Liu, Yong and Lian, Defu and Chen, Enhong},
+  year = {2026},
+  eprint = {2602.23671},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.IR},
+  url = {https://arxiv.org/abs/2602.23671}
+}</code></pre>
+<h2 id="13-contact">13. Contact</h2>
+<p>For paper questions, please contact:</p>
+<ul>
+<li>First author: Yufei Ye (<code>aboluo2003@mail.ustc.edu.cn</code>)</li>
+<li>Corresponding authors: Hao Wang (<code>wanghao3@ustc.edu.cn</code>) and Enhong Chen (<code>cheneh@ustc.edu.cn</code>)</li>
+</ul>
+<p>For repository issues, please open a GitHub issue in this repository.</p>
+
+    </article>
+  </main>
+  <footer>
+    <div class="wrap">This project page mirrors the public-facing README content for quick paper, code, result, citation, and contact access.</div>
+  </footer>
+</body>
+</html>

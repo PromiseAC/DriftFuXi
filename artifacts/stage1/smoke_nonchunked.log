@@ -1,0 +1,28 @@
+
+  0%|          | 0/6 [00:00<?, ?it/s]
+100%|██████████| 6/6 [00:00<00:00, 3364.86it/s]
+
+  0%|          | 0/6 [00:00<?, ?it/s]
+100%|██████████| 6/6 [00:00<00:00, 21435.97it/s]
+Initialize _item_emb.weight as truncated normal: torch.Size([65, 16]) params
+INFO:root:chunk_size = None
+INFO:root:<class 'generative_recommenders.modeling.sequential.input_features_preprocessors.LearnablePositionalEmbeddingInputFeaturesPreprocessor'>
+INFO:root:Retention: num heads = 2, chunk_size = None
+INFO:root:multi-head krab, chunk_size=None
+INFO:root:channel_t tensor([1024, 8192])
+INFO:root:channel_t: learnable gamma!
+INFO:root:channel t: use aug conn.
+INFO:root:Temporal channel config: {'num_heads': 2, 'base': 2, 'base_stride': 3, 'start_index': 10, 'aug_current': True, 'learnable_gamma': True, 'chunk_size': None}
+INFO:root:Positional channel config: {'dim': 4, 'aug_current': True, 'max_sequence_length': 12}
+INFO:root:Retention: num heads = 2, chunk_size = None
+INFO:root:multi-head krab, chunk_size=None
+INFO:root:channel_t tensor([1024, 8192])
+INFO:root:channel t: use aug conn.
+INFO:root:Temporal channel config: {'num_heads': 2, 'base': 2, 'base_stride': 3, 'start_index': 10, 'aug_current': True, 'learnable_gamma': True, 'chunk_size': None}
+INFO:root:Positional channel config: {'dim': 4, 'aug_current': True, 'max_sequence_length': 12}
+[PROJECT_ROOT]/third_party/fuxi-linear/generative_recommenders/modeling/similarity_module.py:86: UserWarning: CUDA is not available or torch_xla is imported. Disabling autocast.
+  with torch.autocast(enabled=True, dtype=torch.bfloat16, device_type="cuda"):
+STEP 0: loss=5.84887505, gradient_norm=100.56443213, updated_parameters=29
+STEP 1: loss=6.04632378, gradient_norm=100.93757886, updated_parameters=29
+STEP 2: loss=8.19381237, gradient_norm=98.20310754, updated_parameters=29
+PASS_CPU_REFERENCE_SYNTHETIC_ONLY artifacts/stage1/smoke_nonchunked.json
