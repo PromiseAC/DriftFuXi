@@ -34,10 +34,13 @@
 ## Stage 2 源码与运行准备
 
 1. `encoder_utils.py` 将无关 Mamba、TiM4Rec、TTT 的导入延迟到对应 baseline 构造函数。原实现仅选 FuXi 时也要求 `mamba_ssm`、`transformers` 等未列入 requirements 的依赖；修改不触及 FuXi 的张量计算。
-2. `trainer/train.py` 可选读取 `DRIFTFUXI_RUN_DIR`，逐 epoch 保存官方 evaluator 原始五项指标、同步 wall-clock、吞吐与 rank 0 峰值 GPU allocated memory；增加 `torch.cuda.manual_seed_all`。split、模型、负采样、loss、候选集、优化器均未改。原有日志与 checkpoint 继续由官方训练函数生成。
+2. `trainer/train.py` 可选读取 `DRIFTFUXI_RUN_DIR`，逐 epoch 保存官方 evaluator 原始五项指标、同步 wall-clock、吞吐与 rank 0 峰值 GPU allocated/reserved memory；增加 `torch.cuda.manual_seed_all`。split、模型、负采样、loss、候选集、优化器均未改。原有日志与 checkpoint 继续由官方训练函数生成。
 3. `scripts/run_stage2_baseline.py` 固定 config/seed/commit、记录硬件与数据 SHA-256，把训练输出隔离到 `outputs/.../seed-42/`，禁止覆盖已有结果。`--prepare-only` 在无 GPU 时只创建元数据，不产生指标。完整训练要求 `torch.cuda.is_available()` 且 `fbgemm_gpu` 可导入。每次 GPU 运行结束归档官方最终 checkpoint。
+   脚本另提供 `--pilot-epochs N`，输出强制放入 `outputs/pilot/` 并标记 `official_reproduction=false`，仅用于环境、显存与成本预检，不能填写论文复现表。训练日志同时输出到终端并保存。
 4. `scripts/download_kuairec.py` 只下载作者 Zenodo 原始 zip 并校验 MD5。已把归档中的 `data/big_matrix.csv` 解压到 `tmp/kuairec/`，从项目根目录执行官方 `preprocess_kuairec_data.py`，见 `tmp/kuairec_preprocess.log`。`scripts/data_stats.py` 为 KuaiRec 长序列提高 CSV 字段限制，不改变数据。
 5. 官方 requirements 锁定 torch 2.2.2，但该版本没有 `torch.nn.functional.rms_norm`，而上游 FuXi MFFN 调用了它。`fuxi_modules/__init__.py` 的 `rms_norm_compat` 在 API 不存在时按 FP32 均方根公式计算并回转原 dtype；API 存在时直调原生函数。已在本地 PyTorch 上比较原生与回退公式的前向、反向结果，尚未在锁定的 Linux/CUDA 环境实测。
+6. 每个 epoch 在训练计时前调用 `torch.cuda.reset_peak_memory_stats(rank)`；epoch 记录同时保存 rank 0 的 peak allocated 与 peak reserved。修复前的实现没有 reset，后续 epoch 会误记为“截至当前的历史峰值”；正式 GPU run 只能使用修复后的记录。
+7. `requirements-stage2-cu121.txt` 只固定 FuXi-Linear + KuaiRec 直接路径；`scripts/check_stage2_gpu_env.py` 在正式运行前检查 PyTorch 2.2.2/cu121、GPU、FBGEMM 0.6.0 所需算子、FuXi import 与数据文件。AutoDL 操作见 `docs/autodl_stage2.md`。
 
 本机已通过：KuaiRec 官方下载校验、官方预处理、全量统计、FuXi 训练模块 import、Stage 2 脚本 AST、`--prepare-only`、CPU 合成 smoke 回归、`pip check`。**未通过/未执行：官方 CUDA/FBGEMM 运行、真实训练、全量 eval、GPU 显存与性能。** 无可用 NVIDIA 主机之前，不能将 Stage 2 标记完成。
 

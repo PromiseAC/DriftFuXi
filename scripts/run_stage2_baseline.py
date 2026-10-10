@@ -43,16 +43,36 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--seed', type=int, default=42)
     parser.add_argument('--prepare-only', action='store_true')
+    parser.add_argument(
+        '--pilot-epochs',
+        type=int,
+        help='Run a separately labeled cost/compatibility pilot; never use its metrics as the baseline.',
+    )
     args = parser.parse_args()
     if args.seed < 0:
         parser.error('Seed must be nonnegative')
-    run_dir = ROOT / 'outputs/baseline/kuairec/linear-4b-l1024-b64x2' / f'seed-{args.seed}'
+    if args.pilot_epochs is not None and args.pilot_epochs <= 0:
+        parser.error('--pilot-epochs must be positive')
+    run_kind = 'pilot' if args.pilot_epochs is not None else 'baseline'
+    if run_kind == 'pilot':
+        run_dir = (ROOT / 'outputs/pilot/kuairec/linear-4b-l1024-b64x2'
+                   / f'epochs-{args.pilot_epochs}' / f'seed-{args.seed}')
+    else:
+        run_dir = ROOT / 'outputs/baseline/kuairec/linear-4b-l1024-b64x2' / f'seed-{args.seed}'
     run_dir.mkdir(parents=True, exist_ok=True)
     if (run_dir / 'epoch_metrics.jsonl').exists() or (run_dir / 'checkpoint.pt').exists():
         parser.error(f'Run already has results; refusing to overwrite: {run_dir}')
     config_text = CONFIG.read_text()
     if 'train_fn.random_seed' in config_text:
         parser.error('Official config now sets a seed; inspect before proceeding')
+    if args.pilot_epochs is not None:
+        official_epochs = 'train_fn.num_epochs = 101'
+        if config_text.count(official_epochs) != 1:
+            parser.error('Could not safely replace the official epoch count for the pilot')
+        config_text = config_text.replace(
+            official_epochs,
+            f'train_fn.num_epochs = {args.pilot_epochs}',
+        )
     config_text += f'\ntrain_fn.random_seed = {args.seed}\n'
     (run_dir/'config.gin').write_text(config_text)
     commit = git(['rev-parse','HEAD'])
@@ -65,6 +85,9 @@ def main():
                       'bytes':path.stat().st_size if path.is_file() else None}
     metadata = {
         'status':'PREPARED' if args.prepare_only else 'STARTING',
+        'run_kind':run_kind,
+        'official_reproduction':run_kind == 'baseline',
+        'num_epochs':args.pilot_epochs if args.pilot_epochs is not None else 101,
         'dataset':'kuairec', 'config':'linear-4b-l1024-b64x2.gin',
         'seed':args.seed, 'code_commit':commit, 'git_dirty_at_prepare':bool(dirty),
         'config_sha256':digest(run_dir/'config.gin'),
@@ -74,10 +97,10 @@ def main():
     }
     launch = [sys.executable, '-u', str(UPSTREAM/'main.py'),
               f'--gin_config_file={run_dir/"config.gin"}', '--master_port=12345']
-    (run_dir/'command.txt').write_text('PYTHONPATH=<project>/third_party/fuxi-linear '
-                                       + ' '.join(['python3','-u','third_party/fuxi-linear/main.py',
-                                                   '--gin_config_file=outputs/baseline/kuairec/linear-4b-l1024-b64x2/'
-                                                   + f'seed-{args.seed}/config.gin','--master_port=12345']) + '\n')
+    wrapper_command = ['python3', 'scripts/run_stage2_baseline.py', '--seed', str(args.seed)]
+    if args.pilot_epochs is not None:
+        wrapper_command.extend(['--pilot-epochs', str(args.pilot_epochs)])
+    (run_dir/'command.txt').write_text(' '.join(wrapper_command) + '\n')
     if args.prepare_only:
         save_json(run_dir/'run_metadata.json',metadata)
         print('Prepared:',run_dir)
@@ -114,12 +137,26 @@ def main():
     save_json(run_dir/'run_metadata.json',metadata)
     start = time.perf_counter()
     with (run_dir/'train.log').open('w') as log:
-        proc = subprocess.run(launch,cwd=run_dir,env=env,stdout=log,stderr=subprocess.STDOUT)
+        proc = subprocess.Popen(
+            launch,
+            cwd=run_dir,
+            env=env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            bufsize=1,
+        )
+        assert proc.stdout is not None
+        for line in proc.stdout:
+            print(line, end='')
+            log.write(line)
+            log.flush()
+        return_code = proc.wait()
     metadata['wall_clock_seconds'] = time.perf_counter() - start
     metadata['finished_utc'] = datetime.now(timezone.utc).isoformat()
-    metadata['exit_code'] = proc.returncode
-    metadata['status'] = 'FINISHED' if proc.returncode == 0 else 'FAILED'
-    if proc.returncode == 0:
+    metadata['exit_code'] = return_code
+    metadata['status'] = 'FINISHED' if return_code == 0 else 'FAILED'
+    if return_code == 0:
         checkpoints = sorted((run_dir/'ckpts').rglob('*_ep*'),key=lambda x:x.stat().st_mtime)
         if checkpoints:
             final = run_dir/'checkpoint.pt'
@@ -127,13 +164,15 @@ def main():
             except OSError: shutil.copy2(checkpoints[-1],final)
             metadata['checkpoint_relative_path'] = str(final.relative_to(run_dir))
             metadata['checkpoint_sha256'] = digest(final)
-        else:
+        elif run_kind == 'baseline':
             metadata['status'] = 'FAILED_NO_CHECKPOINT'
+        else:
+            metadata['status'] = 'PILOT_FINISHED_NO_CHECKPOINT'
     save_json(run_dir/'run_metadata.json',metadata)
     print(metadata['status'], 'wall_seconds=',metadata['wall_clock_seconds'],'output=',run_dir)
-    if proc.returncode:
-        raise SystemExit(proc.returncode)
-    if metadata['status'] != 'FINISHED':
+    if return_code:
+        raise SystemExit(return_code)
+    if run_kind == 'baseline' and metadata['status'] != 'FINISHED':
         raise SystemExit(1)
 
 if __name__ == '__main__':

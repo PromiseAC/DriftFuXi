@@ -18,6 +18,7 @@ DriftFuXi/
 ├── scripts/                    # 数据下载、统计、Smoke 与 Stage 2 运行工具
 ├── artifacts/stage1/           # 合成 fixture、真实执行日志和检查 JSON
 ├── requirements-stage1.txt     # 已有 PyTorch 环境之上的最小增量依赖
+├── requirements-stage2-cu121.txt # Stage 2 Linux/CUDA 最小固定依赖
 └── AGENTS.md                   # 分阶段执行边界
 ```
 
@@ -32,5 +33,7 @@ DriftFuXi/
 ```
 
 其它机器需先建立隔离 Python 3.12 + PyTorch 环境，再安装 `requirements-stage1.txt`；`--cpu-reference` 仅测试 CPU 计算链。源码来源与 Stage 1 修复见 [upstream.md](docs/upstream.md)；Stage 2 的修复与改动见 [复现记录](docs/reproduction_report.md)。
+
+Stage 2 的 NVIDIA/AutoDL 配置、GPU 预检、独立 pilot 与正式运行步骤见 [AutoDL handoff](docs/autodl_stage2.md)。
 
 每次只执行用户明确指定的当前 Stage；完成后汇报核心文件、命令、验证结果与现存问题，并停止。指标和性能数据只来自实际运行。

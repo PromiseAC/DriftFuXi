@@ -314,6 +314,7 @@ def train_fn(
         train_examples = 0
         eval_examples = 0
         torch.cuda.synchronize(rank)
+        torch.cuda.reset_peak_memory_stats(rank)
         train_wall_start = time.perf_counter()
         train_elapse -= time.time()
         for row in iter(train_data_loader):
@@ -548,6 +549,7 @@ def train_fn(
                 "training_throughput_sequences_per_second": train_examples * world_size / train_wall_seconds,
                 "eval_throughput_sequences_per_second": eval_examples * world_size / eval_wall_seconds,
                 "peak_gpu_memory_allocated_bytes_rank0": torch.cuda.max_memory_allocated(rank),
+                "peak_gpu_memory_reserved_bytes_rank0": torch.cuda.max_memory_reserved(rank),
             }
             with open(os.path.join(stage2_run_dir, "epoch_metrics.jsonl"), "a") as f:
                 f.write(json.dumps(record) + "\n")
